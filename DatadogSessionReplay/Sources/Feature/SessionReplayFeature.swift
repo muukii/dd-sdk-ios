@@ -66,8 +66,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             telemetry: telemetry
         )
         self.performanceOverride = PerformancePresetOverride(
-            maxFileSize: UInt64(10).MB,
-            maxObjectSize: UInt64(10).MB,
+            maxFileSize: 10.MB.asUInt64(),
+            maxObjectSize: 10.MB.asUInt64(),
             meanFileAge: 2, // vs 5s with `batchSize: .small` - see `DatadogCore.PerformancePreset`
             uploadDelay: (
                 initial: 2, // vs 5s with `uploadFrequency: .frequent`
