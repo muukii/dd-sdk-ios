@@ -119,13 +119,14 @@ extension CGSize {
 
 fileprivate extension CGSize {
     func scaleAspectFillRect(for contentSize: CGSize) -> CGRect {
-        let scale: CGFloat
-        if (contentSize.width - width) < (contentSize.height - height) {
-            scale = width / contentSize.width
+        let size: CGSize
+        if abs(contentSize.width - width) < abs(contentSize.height - height) {
+            let scale = width / contentSize.width
+            size = CGSize(width: width, height: contentSize.height * scale)
         } else {
-            scale = height / contentSize.height
+            let scale = height / contentSize.height
+            size = CGSize(width: contentSize.width * scale, height: height)
         }
-        let size = CGSize(width: contentSize.width * scale, height: contentSize.height * scale)
 
         return CGRect(
             x: (width - size.width) / 2,
