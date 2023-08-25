@@ -10,29 +10,30 @@ import Foundation
 /// It serves as a useful abstraction for testing purposes as well as allows decoupling from UIKit in order to maintain Catalyst compliation. To abstract from UIKit, it leverages
 /// the fact that UIBackgroundTaskIdentifier raw value is based on Int.
 internal protocol BackgroundTaskCoordinator {
-    func registerBackgroundTask() -> Int
+    func registerBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int
     func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int)
 }
 
 #if canImport(UIKit)
 import UIKit
 
+/// Manages background tasks using UIKit.
+/// This coordinator conforms to the `BackgroundTaskCoordinator` protocol and provides an implementation of managing background tasks using the UIKit framework.
+/// It allows for registering and ending background tasks.
 internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
-    private var currentBackgroundTask: UIBackgroundTaskIdentifier = .invalid
-
-    internal func registerBackgroundTask() -> Int {
+    internal func registerBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
         guard let app = UIApplication.dd.managedShared else {
             return UIBackgroundTaskIdentifier.invalid.rawValue
         }
-        currentBackgroundTask = app.beginBackgroundTask(expirationHandler: { [currentBackgroundTask] in
-            UIApplication.dd.managedShared?.endBackgroundTask(currentBackgroundTask)
-        })
-        return currentBackgroundTask.rawValue
+        return app.beginBackgroundTask(expirationHandler: handler).rawValue
     }
 
     func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int) {
-        UIApplication.dd.managedShared?.endBackgroundTask(.init(rawValue: backgroundTaskIdentifier))
-        currentBackgroundTask = .invalid
+        let task = UIBackgroundTaskIdentifier(rawValue: backgroundTaskIdentifier)
+        guard task != .invalid else {
+            return
+        }
+        UIApplication.dd.managedShared?.endBackgroundTask(task)
     }
 }
 #endif

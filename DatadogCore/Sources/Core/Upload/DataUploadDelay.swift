@@ -18,22 +18,21 @@ internal class DataUploadDelay: Delay {
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval
     private let changeRate: Double
-    private var delay: TimeInterval
+
+    var current: TimeInterval
 
     init(performance: UploadPerformancePreset) {
         self.minDelay = performance.minUploadDelay
         self.maxDelay = performance.maxUploadDelay
         self.changeRate = performance.uploadDelayChangeRate
-        self.delay = performance.initialUploadDelay
+        self.current = performance.initialUploadDelay
     }
 
-    var current: TimeInterval { delay }
-
     func decrease() {
-        delay = max(minDelay, delay * (1.0 - changeRate))
+        current = max(minDelay, current * (1.0 - changeRate))
     }
 
     func increase() {
-        delay = min(delay * (1.0 + changeRate), maxDelay)
+        current = min(current * (1.0 + changeRate), maxDelay)
     }
 }

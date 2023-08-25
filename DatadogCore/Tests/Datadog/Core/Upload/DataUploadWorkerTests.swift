@@ -577,7 +577,7 @@ private class SpyBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.endBackgroundTaskCalled = endBackgroundTaskCalled
     }
 
-    func registerBackgroundTask() -> Int {
+    func registerBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
         registerBackgroundTaskCalled()
         return Int.mockRandom()
     }

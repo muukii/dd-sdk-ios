@@ -35,6 +35,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private var uploadWork: DispatchWorkItem?
 
     private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
+    private var taskID: Int?
 
     init(
         queue: DispatchQueue,
@@ -59,7 +60,12 @@ internal class DataUploadWorker: DataUploadWorkerType {
             guard let self = self else {
                 return
             }
-            let taskID = self.backgroundTaskCoordinator?.registerBackgroundTask()
+            self.taskID = self.backgroundTaskCoordinator?.registerBackgroundTask {
+                guard let taskID = self.taskID else {
+                    return
+                }
+                self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+            }
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
