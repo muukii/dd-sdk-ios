@@ -531,7 +531,7 @@ class DataUploadWorkerTests: XCTestCase {
         let expectTaskRegistered = expectation(description: "task should be registered")
         let expectTaskEnded = expectation(description: "task should be ended")
         let backgroundTaskCoordinator = SpyBackgroundTaskCoordinator(
-            registerBackgroundTaskCalled: {
+            beginBackgroundTaskCalled: {
                 expectTaskRegistered.fulfill()
             }, endBackgroundTaskCalled: {
                 expectTaskEnded.fulfill()
@@ -566,19 +566,19 @@ private extension DataUploadConditions {
 }
 
 private class SpyBackgroundTaskCoordinator: BackgroundTaskCoordinator {
-    private let registerBackgroundTaskCalled: () -> Void
+    private let beginBackgroundTaskCalled: () -> Void
     private let endBackgroundTaskCalled: () -> Void
 
     init(
-        registerBackgroundTaskCalled: @escaping () -> Void,
+        beginBackgroundTaskCalled: @escaping () -> Void,
         endBackgroundTaskCalled: @escaping () -> Void
     ) {
-        self.registerBackgroundTaskCalled = registerBackgroundTaskCalled
+        self.beginBackgroundTaskCalled = beginBackgroundTaskCalled
         self.endBackgroundTaskCalled = endBackgroundTaskCalled
     }
 
-    func registerBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
-        registerBackgroundTaskCalled()
+    func beginBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
+        beginBackgroundTaskCalled()
         return Int.mockRandom()
     }
 
