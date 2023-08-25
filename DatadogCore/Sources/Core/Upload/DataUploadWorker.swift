@@ -60,17 +60,22 @@ internal class DataUploadWorker: DataUploadWorkerType {
             guard let self = self else {
                 return
             }
-            self.taskID = self.backgroundTaskCoordinator?.beginBackgroundTask { [backgroundTaskCoordinator, taskID] in
-                guard let taskID = taskID else {
-                    return
-                }
-                backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
-            }
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
+            let batch = self.fileReader.readNextBatch()
+            let nextBatch = isSystemReady ? batch : nil
             if let batch = nextBatch {
+                if let taskID = taskID {
+                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                    self.taskID = nil
+                }
+                self.taskID = self.backgroundTaskCoordinator?.beginBackgroundTask { [backgroundTaskCoordinator, taskID] in
+                    guard let taskID = taskID else {
+                        return
+                    }
+                    backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                }
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 do {
@@ -111,9 +116,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
-            }
-            if let taskID = taskID {
-                self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                if let taskID = taskID {
+                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                    self.taskID = nil
+                }
             }
             self.scheduleNextUpload(after: self.delay.current)
         }

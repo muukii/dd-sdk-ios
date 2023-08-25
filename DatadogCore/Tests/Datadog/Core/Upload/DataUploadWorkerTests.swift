@@ -547,6 +547,7 @@ class DataUploadWorkerTests: XCTestCase {
             featureName: .mockAny(),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
+        writer.write(value: ["k1": "v1"])
 
         // Then
         withExtendedLifetime(worker) {
